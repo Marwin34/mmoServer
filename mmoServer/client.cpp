@@ -8,6 +8,9 @@ Client::Client(){
 	spdX = 0;
 	spdY = 0;
 	dir = 4;
+	mouseButton = 0;
+	attackCd = 0;
+	attack = false;
 	self = new sf::TcpSocket;
 }
 
@@ -76,6 +79,14 @@ void Client::resetSpd(float x2, float y2, float width2, float height2){
 }
 
 void Client::update(){
+	attack = false;
+	if (mouseButton == 1 && !attackCd){
+		attackCd = 1;
+		attack = true;
+	}
+	if (attackCd++){
+		if (attackCd > 10) attackCd = 0;
+	}
 	x += spdX;
 	y += spdY;
 }
@@ -104,12 +115,12 @@ int Client::getId(){
 
 sf::Packet& operator <<(sf::Packet& packet, const Client& client)
 {
-	return packet << client.id << client.x << client.y << client.dir << client.mapId;
+	return packet << client.id << client.x << client.y << client.dir << client.attack;
 }
 
 sf::Packet& operator >>(sf::Packet& packet, Client& client)
 {
-	return packet >> client.dir;
+	return packet >> client.dir >> client.mouseButton;
 }
 
 

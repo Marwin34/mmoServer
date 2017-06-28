@@ -7,8 +7,11 @@ class Client {
 	float x, y;
 	float spdX, spdY;
 	int dir;
+	unsigned int mouseButton;
 	int id;
 	int mapId; // Id of the map where client is.
+	int attackCd; // Cooldown of simple attack;
+	bool attack;
 
 	friend sf::Packet& operator <<(sf::Packet&, const Client&); // Send operator.
 	friend sf::Packet& operator >>(sf::Packet&, Client&); // Receive operator.
