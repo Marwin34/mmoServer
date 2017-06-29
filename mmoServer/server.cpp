@@ -23,6 +23,7 @@ void Server::run(){
 		mainTimer = mainClock.getElapsedTime(); // Get the main time;
 
 		if (mainTimer.asMilliseconds() - lastUpdate.asMilliseconds() >= 20){ // Update scene and send data only every 50 milliseconds;
+			//std::cout << timer << std::endl;
 			for (unsigned i = 0; i < maps.size(); i++){
 				for (unsigned j = 0; j < maps[i].clients.size(); j++){
 					maps[i].clients[j]->checkAvailableDirections(&maps[i].level.getObstacles());
