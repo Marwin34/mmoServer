@@ -87,7 +87,7 @@ void Client::update(){
 	}
 	if (attackCd){
 		attackCd++;
-		if (attackCd > 20) attackCd = 0;
+		if (attackCd > 40) attackCd = 0;
 	}
 	x += spdX;
 	y += spdY;
