@@ -30,7 +30,7 @@ void Server::run(){
 					maps[i].clients[j]->update();
 				}
 			}
-
+			damageDealer();
 			send();
 			lastUpdate = mainTimer;
 		}
@@ -124,6 +124,61 @@ void Server::mapsInitialization(){
 
 	if (tmp.level.load("starting.txt")){
 		tmp.clients.resize(0);
+		tmp.damageAreas.resize(0);
 		maps.push_back(tmp);
+	}
+}
+
+void Server::damageDealer(){
+	for (unsigned i = 0; i < maps.size(); i++){
+		for (unsigned j = 0; j < maps[i].clients.size(); j++){
+			if (maps[i].clients[j]->attacking()){
+				DamageArea tmp;
+
+				if (maps[i].clients[j]->getDir() == 0){
+					tmp.x = maps[i].clients[j]->getX();
+					tmp.y = maps[i].clients[j]->getY() - 10;
+					tmp.width = 32;
+					tmp.height = 10;
+				}
+				if (maps[i].clients[j]->getDir() == 1){
+					tmp.x = maps[i].clients[j]->getX() + 32;
+					tmp.y = maps[i].clients[j]->getY();
+					tmp.width = 10;
+					tmp.height = 32;
+				}
+				if (maps[i].clients[j]->getDir() == 2 || maps[i].clients[j]->getDir() == 4){
+					tmp.x = maps[i].clients[j]->getX();
+					tmp.y = maps[i].clients[j]->getY() + 32;
+					tmp.width = 32;
+					tmp.height = 10;
+				}
+				if (maps[i].clients[j]->getDir() == 3){
+					tmp.x = maps[i].clients[j]->getX() - 10;
+					tmp.y = maps[i].clients[j]->getY();
+					tmp.width = 10;
+					tmp.height = 32;
+				}
+				//std::cout << tmp.x << " , " << tmp.y << std::endl;
+				tmp.damage = 44;
+				tmp.ttl = 1;
+				tmp.originId = maps[i].clients[j]->getId();
+				maps[i].damageAreas.push_back(tmp);
+			}
+		}
+		for (unsigned j = 0; j < maps[i].damageAreas.size(); j++){
+			for (unsigned k = 0; k < maps[i].clients.size(); k++){
+				if (maps[i].damageAreas[j].x <= maps[i].clients[k]->getX() + 32
+					&& maps[i].clients[k]->getX() <= maps[i].damageAreas[j].x + maps[i].damageAreas[j].width
+					&& maps[i].damageAreas[j].y <= maps[i].clients[k]->getY() + 32
+					&& maps[i].clients[k]->getY() <= maps[i].damageAreas[j].y + maps[i].damageAreas[j].height
+					&& maps[i].clients[k]->getId() != maps[i].damageAreas[j].originId){
+					std::cout << maps[i].clients[k]->getX() << " , " << maps[i].clients[k]->getY() << " , " << maps[i].damageAreas[j].x << " , " << maps[i].damageAreas[j].y << std::endl;
+					maps[i].clients[k]->harm(maps[i].damageAreas[j].damage);
+				}
+			}
+			maps[i].damageAreas[j].ttl--;
+			if (!maps[i].damageAreas[j].ttl) maps[i].damageAreas.erase(maps[i].damageAreas.begin() + j);
+		}
 	}
 }

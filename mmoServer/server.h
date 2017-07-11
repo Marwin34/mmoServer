@@ -12,9 +12,16 @@ class Server {
 	sf::Time mainTimer; // Create mainTimer of the client loop.
 	sf::Time lastUpdate; // Time of the last update of the client.
 
+	struct DamageArea {
+		float x, y, width, height;
+		int damage, ttl;
+		int originId;
+	};
+
 	struct Map {
 		Level level;
 		std::vector<Client*> clients; // Make a list of clients, for each map.
+		std::vector<DamageArea> damageAreas; // Harmful areas ont he map. Spells, sword attacks itp.
 	};
 
 	std::vector<Map> maps;
@@ -27,4 +34,5 @@ public:
 	void receive();
 	void send();
 	void mapsInitialization();
+	void damageDealer();
 };

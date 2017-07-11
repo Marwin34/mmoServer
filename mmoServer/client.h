@@ -7,8 +7,10 @@ class Client {
 	float x, y;
 	float spdX, spdY;
 	int dir;
+	int lastDir;
 	unsigned int mouseButton;
 	int id;
+	int hp;
 	int mapId; // Id of the map where client is.
 	int attackCd; // Cooldown of simple attack;
 	bool attack;
@@ -24,9 +26,12 @@ public:
 	void checkAvailableDirections(std::vector<std::vector<float>>*); // Determine whether plauyer can go in choosed direction. Call it alwasy before UPDATE!!!! 
 	void resetSpd(float, float, float, float); // Take player position and size and match with colideable object position and size (considering speed ofc.) if they are colideing, set speed to 0. Used in above function.
 	void update();
+	void harm(int);
 	float getX();
 	float getY();
 	std::string getStats();
 	sf::TcpSocket* getSocket();
 	int getId();
+	int getDir();
+	bool attacking();
 };

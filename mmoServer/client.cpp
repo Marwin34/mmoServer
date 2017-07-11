@@ -8,10 +8,12 @@ Client::Client(){
 	spdX = 0;
 	spdY = 0;
 	dir = 4;
+	lastDir = dir;
 	mouseButton = 0;
 	attackCd = 0;
 	attack = false;
 	self = new sf::TcpSocket;
+	hp = 500;
 }
 
 Client::~Client(){
@@ -34,10 +36,10 @@ void Client::checkAvailableDirections(std::vector<std::vector<float>> *obstacles
 	if (dir == 1) spdX = 2;
 	if (dir == 2) spdY = 2;
 	if (dir == 3) spdX = -2;
-
 	for (unsigned i = 0; i < obstacles->size(); i++){
 		resetSpd(obstacles->at(i)[0] * 32, obstacles->at(i)[1] * 32, obstacles->at(i)[2] * 32, obstacles->at(i)[3] * 32); // 32 = block size;
 	}
+	if (dir != 4) lastDir = dir;
 }
 
 void Client::resetSpd(float x2, float y2, float width2, float height2){ 
@@ -79,6 +81,7 @@ void Client::resetSpd(float x2, float y2, float width2, float height2){
 }
 
 void Client::update(){
+	//std::cout << hp << std::endl;
 	attack = false;
 	if (mouseButton == 1 && !attackCd){
 		mouseButton = 0;
@@ -91,6 +94,10 @@ void Client::update(){
 	}
 	x += spdX;
 	y += spdY;
+}
+
+void Client::harm(int damage){
+	hp -= damage;
 }
 
 std::string Client::getStats(){
@@ -113,6 +120,14 @@ float Client::getY(){
 
 int Client::getId(){
 	return id;
+}
+
+int Client::getDir(){
+	return lastDir;
+}
+
+bool Client::attacking(){
+	return attack;
 }
 
 sf::Packet& operator <<(sf::Packet& packet, const Client& client)
