@@ -10,7 +10,8 @@ class Client {
 	int lastDir;
 	unsigned int mouseButton;
 	int id;
-	int hp;
+	int currHp;
+	int maxHp;
 	int mapId; // Id of the map where client is.
 	int attackCd; // Cooldown of simple attack;
 	bool attack;
@@ -27,6 +28,7 @@ public:
 	void resetSpd(float, float, float, float); // Take player position and size and match with colideable object position and size (considering speed ofc.) if they are colideing, set speed to 0. Used in above function.
 	void update();
 	void harm(int);
+	void restart();
 	float getX();
 	float getY();
 	std::string getStats();

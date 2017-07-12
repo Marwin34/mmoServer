@@ -173,7 +173,6 @@ void Server::damageDealer(){
 					&& maps[i].damageAreas[j].y <= maps[i].clients[k]->getY() + 32
 					&& maps[i].clients[k]->getY() <= maps[i].damageAreas[j].y + maps[i].damageAreas[j].height
 					&& maps[i].clients[k]->getId() != maps[i].damageAreas[j].originId){
-					std::cout << maps[i].clients[k]->getX() << " , " << maps[i].clients[k]->getY() << " , " << maps[i].damageAreas[j].x << " , " << maps[i].damageAreas[j].y << std::endl;
 					maps[i].clients[k]->harm(maps[i].damageAreas[j].damage);
 				}
 			}

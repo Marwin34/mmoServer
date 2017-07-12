@@ -13,7 +13,8 @@ Client::Client(){
 	attackCd = 0;
 	attack = false;
 	self = new sf::TcpSocket;
-	hp = 500;
+	maxHp = 500;
+	currHp = maxHp;
 }
 
 Client::~Client(){
@@ -81,7 +82,7 @@ void Client::resetSpd(float x2, float y2, float width2, float height2){
 }
 
 void Client::update(){
-	//std::cout << hp << std::endl;
+	if (currHp <= 0) restart();
 	attack = false;
 	if (mouseButton == 1 && !attackCd){
 		mouseButton = 0;
@@ -97,7 +98,15 @@ void Client::update(){
 }
 
 void Client::harm(int damage){
-	hp -= damage;
+	currHp -= damage;
+}
+
+void Client::restart(){
+	currHp = maxHp;
+	x = 0;
+	y = 0;
+	attack = false;
+	attackCd = 0;
 }
 
 std::string Client::getStats(){
@@ -132,7 +141,7 @@ bool Client::attacking(){
 
 sf::Packet& operator <<(sf::Packet& packet, const Client& client)
 {
-	return packet << client.id << client.x << client.y << client.dir << client.attack;
+	return packet << client.id << client.x << client.y << client.dir << client.attack << client.maxHp << client.currHp;
 }
 
 sf::Packet& operator >>(sf::Packet& packet, Client& client)
