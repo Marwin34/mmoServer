@@ -25,6 +25,11 @@ void Server::run(){
 		if (mainTimer.asMilliseconds() - lastUpdate.asMilliseconds() >= 20){ // Update scene and send data only every 50 milliseconds;
 			//std::cout << timer << std::endl;
 			for (unsigned i = 0; i < maps.size(); i++){
+				for (unsigned j = 0; j < maps[i].enemies.size(); j++){
+					maps[i].enemies[j].update();
+				}
+			}
+			for (unsigned i = 0; i < maps.size(); i++){
 				for (unsigned j = 0; j < maps[i].clients.size(); j++){
 					maps[i].clients[j]->checkAvailableDirections(&maps[i].level.getObstacles());
 					maps[i].clients[j]->update();
@@ -112,6 +117,12 @@ void Server::send(){
 			packet << client;
 		}
 
+		packet << maps[i].enemies.size();
+
+		for (unsigned j = 0; j < maps[i].enemies.size(); j++){
+			packet << maps[i].enemies[j];
+		}
+
 		for (unsigned j = 0; j < maps[i].clients.size(); j++){ // Send data to players on this map.
 			if (maps[i].clients[j]->getSocket()->send(packet) != sf::Socket::Done) continue;
 		}
@@ -121,10 +132,10 @@ void Server::send(){
 void Server::mapsInitialization(){
 	Map tmp;
 	maps.resize(0);
-
 	if (tmp.level.load("starting.txt")){
 		tmp.clients.resize(0);
 		tmp.damageAreas.resize(0);
+		tmp.enemies = enemiesInit("starting");
 		maps.push_back(tmp);
 	}
 }
@@ -174,6 +185,15 @@ void Server::damageDealer(){
 					&& maps[i].clients[k]->getY() <= maps[i].damageAreas[j].y + maps[i].damageAreas[j].height
 					&& maps[i].clients[k]->getId() != maps[i].damageAreas[j].originId){
 					maps[i].clients[k]->harm(maps[i].damageAreas[j].damage);
+				}
+			}
+			for (unsigned k = 0; k < maps[i].enemies.size(); k++){
+				if (maps[i].damageAreas[j].x <= maps[i].enemies[k].getX() + 32
+					&& maps[i].enemies[k].getX() <= maps[i].damageAreas[j].x + maps[i].damageAreas[j].width
+					&& maps[i].damageAreas[j].y <= maps[i].enemies[k].getY() + 32
+					&& maps[i].enemies[k].getY() <= maps[i].damageAreas[j].y + maps[i].damageAreas[j].height){
+					std::cout << "tu" << std::endl;
+					maps[i].enemies[k].harm(maps[i].damageAreas[j].damage);
 				}
 			}
 			maps[i].damageAreas[j].ttl--;
