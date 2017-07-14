@@ -7,6 +7,7 @@ Enemy::Enemy(){
 	currHp = maxHp;
 	damage = 0;
 	range = 0;
+	dir = 0;
 	respawnTime = sf::Time::Zero;
 	attack = false;
 }
@@ -27,7 +28,7 @@ void Enemy::init(std::string name, float startX, float startY){
 }
 
 void Enemy::update(){
-	
+	 
 }
 
 void Enemy::harm(int damage){
@@ -56,7 +57,7 @@ sf::Time Enemy::getRespawnTime(){
 
 sf::Packet& operator <<(sf::Packet& packet, const Enemy& enemy)
 {
-	return packet << enemy.id << enemy.x << enemy.y << enemy.attack << enemy.maxHp << enemy.currHp;
+	return packet << enemy.id << enemy.x << enemy.y << enemy.dir <<enemy.attack << enemy.maxHp << enemy.currHp;
 }
 
 std::vector<Enemy> enemiesInit(std::string mapName){

@@ -9,6 +9,7 @@ class Enemy{
 	int currHp;
 	int damage;
 	int id;
+	int dir;
 	sf::Time respawnTime;
 	float range;
 	bool attack;

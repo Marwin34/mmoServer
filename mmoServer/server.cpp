@@ -110,14 +110,12 @@ void Server::send(){
 
 		std::string type = "DATAS"; // Data packet header.
 		sf::Packet packet;
-		packet << type << maps[i].clients.size();
+		packet << type << maps[i].clients.size() << maps[i].enemies.size();
 
 		for (unsigned j = 0; j < maps[i].clients.size(); j++){ // Gather all data.
 			Client& client = *maps[i].clients[j];
 			packet << client;
 		}
-
-		packet << maps[i].enemies.size();
 
 		for (unsigned j = 0; j < maps[i].enemies.size(); j++){
 			packet << maps[i].enemies[j];
@@ -192,7 +190,6 @@ void Server::damageDealer(){
 					&& maps[i].enemies[k].getX() <= maps[i].damageAreas[j].x + maps[i].damageAreas[j].width
 					&& maps[i].damageAreas[j].y <= maps[i].enemies[k].getY() + 32
 					&& maps[i].enemies[k].getY() <= maps[i].damageAreas[j].y + maps[i].damageAreas[j].height){
-					std::cout << "tu" << std::endl;
 					maps[i].enemies[k].harm(maps[i].damageAreas[j].damage);
 				}
 			}
