@@ -1,11 +1,16 @@
 #include "server.h"
 
 Server::Server() : r_thread(&Server::receive, this){
+	window.setFramerateLimit(30);
 	listener.listen(55001); // Bind listener to the port.
 	selector.add(listener); // Put listener to the selector.
 	running = true;
+	serverTick = 0;
 	mainTimer = sf::Time::Zero; // Initialize the mainTimer.
 	lastUpdate = sf::Time::Zero; // initialize the lastUpdate timer;
+
+	msgTimer = sf::Time::Zero; // Initialize the mainTimer.
+	lastMsg = sf::Time::Zero; // initialize the lastUpdate timer;
 
 	mapsInitialization();
 }
@@ -22,8 +27,8 @@ void Server::run(){
 
 		mainTimer = mainClock.getElapsedTime(); // Get the main time;
 
-		if (mainTimer.asMilliseconds() - lastUpdate.asMilliseconds() >= 20){ // Update scene and send data only every 50 milliseconds;
-			//std::cout << timer << std::endl;
+		if (mainTimer.asMilliseconds() - lastUpdate.asMilliseconds() >= 30){ // Update scene and send data only every 50 milliseconds;
+			//std::cout << serverTick << std::endl;
 			for (unsigned i = 0; i < maps.size(); i++){
 				for (unsigned j = 0; j < maps[i].enemies.size(); j++){
 					maps[i].enemies[j].update();
@@ -38,7 +43,16 @@ void Server::run(){
 			damageDealer();
 			send();
 			lastUpdate = mainTimer;
+			serverTick++;
 		}
+
+		msgTimer = mainClock.getElapsedTime();
+		if (msgTimer.asMilliseconds() - lastMsg.asMilliseconds() >= 100){
+			std::cout << msgTimer.asMilliseconds() - lastMsg.asMilliseconds() << std::endl;
+			send();
+			lastMsg = msgTimer;
+		}
+		sf::sleep(sf::milliseconds(10));
 	}
 }
 
@@ -58,7 +72,7 @@ void Server::receive(){
 					client->initId(rand()); // Set randomly generated ID for client.
 					std::string type = "INIT";
 					sf::Packet packet;
-					packet << type << client->getId();
+					packet << type << client->getId() << serverTick;
 					client->getSocket()->send(packet); // Send id to client;
 					// Add the new client to the clients list
 					maps[0].clients.push_back(client);
