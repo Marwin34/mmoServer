@@ -24,7 +24,7 @@ void Server::run(){
 	r_thread.launch();
 	while (running){
 		//receive(); // Receive data any time something is waiting.
-
+		std::cout << "FPS : " << 1.f / fpsClock.getElapsedTime().asSeconds() << std::endl;
 		mainTimer = mainClock.getElapsedTime(); // Get the main time;
 
 		if (mainTimer.asMilliseconds() - lastUpdate.asMilliseconds() >= 30){ // Update scene and send data only every 50 milliseconds;
@@ -48,10 +48,10 @@ void Server::run(){
 
 		msgTimer = mainClock.getElapsedTime();
 		if (msgTimer.asMilliseconds() - lastMsg.asMilliseconds() >= 100){
-			std::cout << msgTimer.asMilliseconds() - lastMsg.asMilliseconds() << std::endl;
 			send();
 			lastMsg = msgTimer;
 		}
+		fpsClock.restart();
 		sf::sleep(sf::milliseconds(10));
 	}
 }

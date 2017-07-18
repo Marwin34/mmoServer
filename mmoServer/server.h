@@ -11,6 +11,7 @@ class Server {
 	bool running;
 	int serverTick;
 	sf::Clock mainClock; // Creat mainClock of the client loop.
+	sf::Clock fpsClock;
 	sf::Time mainTimer; // Create mainTimer of the client loop.
 	sf::Time lastUpdate; // Time of the last update of the client.
 	sf::Time msgTimer; // Create mainTimer of the client loop.
