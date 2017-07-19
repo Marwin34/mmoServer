@@ -16,7 +16,6 @@ class Server {
 	sf::Time lastUpdate; // Time of the last update of the client.
 	sf::Time msgTimer; // Create mainTimer of the client loop.
 	sf::Time lastMsg; // Time of the last update of the client.
-	sf::Window window;
 
 	struct DamageArea {
 		float x, y, width, height;

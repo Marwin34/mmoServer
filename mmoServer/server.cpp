@@ -1,7 +1,6 @@
 #include "server.h"
 
 Server::Server() : r_thread(&Server::receive, this){
-	window.setFramerateLimit(30);
 	listener.listen(55001); // Bind listener to the port.
 	selector.add(listener); // Put listener to the selector.
 	running = true;
@@ -24,11 +23,12 @@ void Server::run(){
 	r_thread.launch();
 	while (running){
 		//receive(); // Receive data any time something is waiting.
-		std::cout << "FPS : " << 1.f / fpsClock.getElapsedTime().asSeconds() << std::endl;
+		
 		mainTimer = mainClock.getElapsedTime(); // Get the main time;
 
 		if (mainTimer.asMilliseconds() - lastUpdate.asMilliseconds() >= 30){ // Update scene and send data only every 50 milliseconds;
 			//std::cout << serverTick << std::endl;
+			
 			for (unsigned i = 0; i < maps.size(); i++){
 				for (unsigned j = 0; j < maps[i].enemies.size(); j++){
 					maps[i].enemies[j].update();
@@ -41,9 +41,10 @@ void Server::run(){
 				}
 			}
 			damageDealer();
-			send();
 			lastUpdate = mainTimer;
 			serverTick++;
+			std::cout << "FPS : " << 1.f / fpsClock.getElapsedTime().asSeconds() << std::endl;
+			fpsClock.restart();
 		}
 
 		msgTimer = mainClock.getElapsedTime();
@@ -51,7 +52,7 @@ void Server::run(){
 			send();
 			lastMsg = msgTimer;
 		}
-		fpsClock.restart();
+		
 		sf::sleep(sf::milliseconds(10));
 	}
 }
@@ -125,7 +126,6 @@ void Server::send(){
 		std::string type = "DATAS"; // Data packet header.
 		sf::Packet packet;
 		packet << type << maps[i].clients.size() << maps[i].enemies.size();
-
 		for (unsigned j = 0; j < maps[i].clients.size(); j++){ // Gather all data.
 			Client& client = *maps[i].clients[j];
 			packet << client;
