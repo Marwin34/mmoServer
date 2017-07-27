@@ -58,10 +58,6 @@ void Server::receive(){
 				if (listener.accept(*client->getSocket()) == sf::Socket::Done)
 				{
 					client->initId(rand()); // Set randomly generated ID for client.
-					std::string type = "INIT";
-					sf::Packet packet;
-					packet << type << client->getId() << serverTick;
-					client->getSocket()->send(packet); // Send id to client;
 					// Add the new client to the clients list
 					maps[0].clients.push_back(client);
 					// Add the new client to the selector so that we will
@@ -112,32 +108,19 @@ void Server::send(){
 
 		std::string type = "DATAS"; // Data packet header.
 		sf::Packet packet;
-		/*packet << type << maps[i].clients.size() - 1 << maps[i].enemies.size();
-		for (unsigned j = 0; j < maps[i].clients.size(); j++){ // Gather all data.
-			Client& client = *maps[i].clients[j];
-			packet << client;
-		}
-
-		for (unsigned j = 0; j < maps[i].enemies.size(); j++){
-			packet << maps[i].enemies[j];
-		}
-
-		for (unsigned j = 0; j < maps[i].clients.size(); j++){ // Send data to players on this map.
-			if (maps[i].clients[j]->getSocket()->send(packet) != sf::Socket::Done) continue;
-		}*/
-		for (unsigned j = 0; j < maps[i].clients.size(); j++){ // Send data to players on this map.
+		for (unsigned j = 0; j < maps[i].clients.size(); j++){ 
 			packet.clear();
-			packet << type << maps[i].clients.size() - 1 << maps[i].enemies.size();
+			packet << type << maps[i].clients.size() - 1 << maps[i].enemies.size(); // Insert count of enemies and players (excluded player which is contolled by this client).
 			Client& client = *maps[i].clients[j];
-			packet < client;
-			for (unsigned k = 0; k < maps[i].clients.size(); k++){
+			packet < client; // Insert data abaut player controlled by this client.
+			for (unsigned k = 0; k < maps[i].clients.size(); k++){ // Gather data about players.
 				if (maps[i].clients[k]->getId() == client.getId()) continue;
 				packet << *maps[i].clients[k];
 			}
-			for (unsigned k = 0; k < maps[i].enemies.size(); k++){
+			for (unsigned k = 0; k < maps[i].enemies.size(); k++){ // Gather data abaut enemies.
 				packet << maps[i].enemies[k];
 			}
-			if (maps[i].clients[j]->getSocket()->send(packet) != sf::Socket::Done) continue;
+			if (maps[i].clients[j]->getSocket()->send(packet) != sf::Socket::Done) continue; // Send data to players on this map.
 		}
 	}
 }
@@ -153,7 +136,7 @@ void Server::mapsInitialization(){
 	}
 }
 
-void Server::damageDealer(){
+void Server::damageDealer(){ // Obsolete, not used currently!!!!
 	for (unsigned i = 0; i < maps.size(); i++){
 		for (unsigned j = 0; j < maps[i].clients.size(); j++){
 			if (maps[i].clients[j]->attacking()){
