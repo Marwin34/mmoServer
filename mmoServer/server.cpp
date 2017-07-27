@@ -7,10 +7,6 @@ Server::Server() : r_thread(&Server::receive, this){
 	serverTick = 0;
 	mainTimer = sf::Time::Zero; // Initialize the mainTimer.
 	lastUpdate = sf::Time::Zero; // initialize the lastUpdate timer;
-
-	msgTimer = sf::Time::Zero; // Initialize the mainTimer.
-	lastMsg = sf::Time::Zero; // initialize the lastUpdate timer;
-
 	mapsInitialization();
 }
 
@@ -21,12 +17,10 @@ Server::~Server(){
 void Server::run(){
 	srand((unsigned)time(NULL));
 	r_thread.launch();
-	while (running){
-		//receive(); // Receive data any time something is waiting.
-		
+	while (running){		
 		mainTimer = mainClock.getElapsedTime(); // Get the main time;
 
-		if (mainTimer.asMilliseconds() - lastUpdate.asMilliseconds() >= 30){ // Update scene and send data only every 50 milliseconds;
+		if (mainTimer.asMilliseconds() - lastUpdate.asMilliseconds() >= 100){ // Update scene and send data only every 50 milliseconds;
 			//std::cout << serverTick << std::endl;
 			
 			for (unsigned i = 0; i < maps.size(); i++){
@@ -36,23 +30,16 @@ void Server::run(){
 			}
 			for (unsigned i = 0; i < maps.size(); i++){
 				for (unsigned j = 0; j < maps[i].clients.size(); j++){
-					maps[i].clients[j]->checkAvailableDirections(&maps[i].level.getObstacles());
-					maps[i].clients[j]->update();
+					maps[i].clients[j]->update(&maps[i].level.getObstacles());
 				}
 			}
 			damageDealer();
 			lastUpdate = mainTimer;
 			serverTick++;
 			std::cout << "FPS : " << 1.f / fpsClock.getElapsedTime().asSeconds() << std::endl;
-			fpsClock.restart();
-		}
-
-		msgTimer = mainClock.getElapsedTime();
-		if (msgTimer.asMilliseconds() - lastMsg.asMilliseconds() >= 100){
 			send();
-			lastMsg = msgTimer;
-		}
-		
+			fpsClock.restart();
+		}		
 		sf::sleep(sf::milliseconds(10));
 	}
 }
@@ -125,7 +112,7 @@ void Server::send(){
 
 		std::string type = "DATAS"; // Data packet header.
 		sf::Packet packet;
-		packet << type << maps[i].clients.size() << maps[i].enemies.size();
+		/*packet << type << maps[i].clients.size() - 1 << maps[i].enemies.size();
 		for (unsigned j = 0; j < maps[i].clients.size(); j++){ // Gather all data.
 			Client& client = *maps[i].clients[j];
 			packet << client;
@@ -136,6 +123,20 @@ void Server::send(){
 		}
 
 		for (unsigned j = 0; j < maps[i].clients.size(); j++){ // Send data to players on this map.
+			if (maps[i].clients[j]->getSocket()->send(packet) != sf::Socket::Done) continue;
+		}*/
+		for (unsigned j = 0; j < maps[i].clients.size(); j++){ // Send data to players on this map.
+			packet.clear();
+			packet << type << maps[i].clients.size() - 1 << maps[i].enemies.size();
+			Client& client = *maps[i].clients[j];
+			packet < client;
+			for (unsigned k = 0; k < maps[i].clients.size(); k++){
+				if (maps[i].clients[k]->getId() == client.getId()) continue;
+				packet << *maps[i].clients[k];
+			}
+			for (unsigned k = 0; k < maps[i].enemies.size(); k++){
+				packet << maps[i].enemies[k];
+			}
 			if (maps[i].clients[j]->getSocket()->send(packet) != sf::Socket::Done) continue;
 		}
 	}

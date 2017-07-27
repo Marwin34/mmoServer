@@ -15,6 +15,10 @@ Client::Client(){
 	self = new sf::TcpSocket;
 	maxHp = 500;
 	currHp = maxHp;
+	inputIndex = 0;
+	dealedInput = 0;
+
+	inputsQueue.resize(0);
 }
 
 Client::~Client(){
@@ -30,21 +34,8 @@ void Client::initId(int data){
 	//std::cout << charId << std::endl;
 }
 
-void Client::checkAvailableDirections(std::vector<std::vector<float>> *obstacles){
-	spdX = 0;
-	spdY = 0;
-	if (dir == 0) spdY = -2;
-	if (dir == 1) spdX = 2;
-	if (dir == 2) spdY = 2;
-	if (dir == 3) spdX = -2;
-	for (unsigned i = 0; i < obstacles->size(); i++){
-		resetSpd(obstacles->at(i)[0] * 32, obstacles->at(i)[1] * 32, obstacles->at(i)[2] * 32, obstacles->at(i)[3] * 32); // 32 = block size;
-	}
-	if (dir != 4) lastDir = dir;
-}
-
-void Client::resetSpd(float x2, float y2, float width2, float height2){ 
-	if (dir == 0  // TOP
+void Client::resetSpd(float x2, float y2, float width2, float height2, int direcrtion){ 
+	if (direcrtion == 0  // TOP
 		&& x <= x2 + width2
 		&& x2 <= x + 32
 		&& y - 2 <= y2 + height2
@@ -53,7 +44,7 @@ void Client::resetSpd(float x2, float y2, float width2, float height2){
 		spdY = 0;
 	}
 
-	if (dir == 1 // RIGHT
+	if (direcrtion == 1 // RIGHT
 		&& x + 2 <= x2 + width2
 		&& x2 <= x + 2 + 32
 		&& y <= y2 + height2
@@ -62,7 +53,7 @@ void Client::resetSpd(float x2, float y2, float width2, float height2){
 		spdX = 0;
 	}
 
-	if (dir == 2 // DOWN
+	if (direcrtion == 2 // DOWN
 		&& x <= x2 + width2
 		&& x2 <= x + 32
 		&& y + 2 <= y2 + height2
@@ -71,7 +62,7 @@ void Client::resetSpd(float x2, float y2, float width2, float height2){
 		spdY = 0;
 	}
 
-	if (dir == 3 // LEFT
+	if (direcrtion == 3 // LEFT
 		&& x - 2 <= x2 + width2
 		&& x2 <= x - 2 + 32
 		&& y <= y2 + height2
@@ -81,9 +72,27 @@ void Client::resetSpd(float x2, float y2, float width2, float height2){
 	}
 }
 
-void Client::update(){
+void Client::update(std::vector<std::vector<float>> *obstacles){
 	if (currHp <= 0) restart();
 	attack = false;
+	dir = 4;
+	for (unsigned i = 0; i < inputsQueue.size(); i++){
+		spdX = 0;
+		spdY = 0;
+		if (inputsQueue[i].keyboard == 0) spdY = -2;
+		if (inputsQueue[i].keyboard == 1) spdX = 2;
+		if (inputsQueue[i].keyboard == 2) spdY = 2;
+		if (inputsQueue[i].keyboard == 3) spdX = -2;
+		for (unsigned j = 0; j < obstacles->size(); j++){
+			resetSpd(obstacles->at(j)[0] * 32, obstacles->at(j)[1] * 32, obstacles->at(j)[2] * 32, obstacles->at(j)[3] * 32, inputsQueue[i].keyboard); // 32 = block size;
+		}
+		if (inputsQueue[i].keyboard != 4) dir = inputsQueue[i].keyboard;
+		x += spdX;
+		y += spdY;
+		dealedInput = inputsQueue[i].index;
+	}
+	lastDir = dir;
+	inputsQueue.resize(0);
 	if (mouseButton == 1 && !attackCd){
 		mouseButton = 0;
 		attackCd = 1;
@@ -93,8 +102,6 @@ void Client::update(){
 		attackCd++;
 		if (attackCd > 40) attackCd = 0;
 	}
-	x += spdX;
-	y += spdY;
 }
 
 void Client::harm(int damage){
@@ -144,9 +151,20 @@ sf::Packet& operator <<(sf::Packet& packet, const Client& client)
 	return packet << client.id << client.x << client.y << client.dir << client.attack << client.maxHp << client.currHp;
 }
 
+sf::Packet& operator <(sf::Packet& packet, const Client& client)
+{
+	return packet << client.dealedInput << client.x << client.y << client.attack << client.maxHp << client.currHp;
+}
+
 sf::Packet& operator >>(sf::Packet& packet, Client& client)
 {
-	return packet >> client.dir >> client.mouseButton;
+	//return packet >> client.inputIndex >> client.dir >> client.mouseButton;
+	InputS tmp;
+	packet >> tmp.index;
+	packet >> tmp.keyboard;
+	packet >> tmp.mosue;
+	client.inputsQueue.push_back(tmp);
+	return packet;
 }
 
 

@@ -14,8 +14,6 @@ class Server {
 	sf::Clock fpsClock;
 	sf::Time mainTimer; // Create mainTimer of the client loop.
 	sf::Time lastUpdate; // Time of the last update of the client.
-	sf::Time msgTimer; // Create mainTimer of the client loop.
-	sf::Time lastMsg; // Time of the last update of the client.
 
 	struct DamageArea {
 		float x, y, width, height;

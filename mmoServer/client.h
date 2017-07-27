@@ -2,21 +2,32 @@
 #include <sstream>
 #include <SFML/Network.hpp>
 
+struct InputS{
+	int index;
+	int keyboard;
+	int mosue;
+};
+
 class Client {
 	sf::TcpSocket* self;
 	float x, y;
 	float spdX, spdY;
 	int dir;
-	int lastDir;
 	unsigned int mouseButton;
 	int id;
 	int currHp;
 	int maxHp;
 	int mapId; // Id of the map where client is.
 	int attackCd; // Cooldown of simple attack;
+	int inputIndex;
+	int dealedInput;
+	int lastDir;
 	bool attack;
 
+	std::vector<InputS> inputsQueue;
+
 	friend sf::Packet& operator <<(sf::Packet&, const Client&); // Send operator.
+	friend sf::Packet& operator <(sf::Packet&, const Client&); // Send operator.
 	friend sf::Packet& operator >>(sf::Packet&, Client&); // Receive operator.
 
 public:
@@ -24,9 +35,8 @@ public:
 	~Client();
 	void init(sf::TcpSocket*);
 	void initId(int);
-	void checkAvailableDirections(std::vector<std::vector<float>>*); // Determine whether plauyer can go in choosed direction. Call it alwasy before UPDATE!!!! 
-	void resetSpd(float, float, float, float); // Take player position and size and match with colideable object position and size (considering speed ofc.) if they are colideing, set speed to 0. Used in above function.
-	void update();
+	void resetSpd(float, float, float, float, int); // Take player position and size and match with colideable object position and size (considering speed ofc.) if they are colideing, set speed to 0. Used in above function.
+	void update(std::vector<std::vector<float>> *);
 	void harm(int);
 	void restart();
 	float getX();
