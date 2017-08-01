@@ -36,7 +36,7 @@ void Server::run(){
 			damageDealer();
 			lastUpdate = mainTimer;
 			serverTick++;
-			std::cout << "FPS : " << 1.f / fpsClock.getElapsedTime().asSeconds() << std::endl;
+			std::cout << "Updates Per Second : " << 1.f / fpsClock.getElapsedTime().asSeconds() << std::endl;
 			send();
 			fpsClock.restart();
 		}		
@@ -171,6 +171,7 @@ void Server::damageDealer(){ // Obsolete, not used currently!!!!
 				tmp.ttl = 1;
 				tmp.originId = maps[i].clients[j]->getId();
 				maps[i].damageAreas.push_back(tmp);
+				maps[i].clients[j]->rAttacking();
 			}
 		}
 		for (unsigned j = 0; j < maps[i].damageAreas.size(); j++){

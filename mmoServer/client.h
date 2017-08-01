@@ -5,7 +5,7 @@
 struct InputS{
 	int index;
 	int keyboard;
-	int mosue;
+	int mouse;
 };
 
 class Client {
@@ -23,6 +23,7 @@ class Client {
 	int dealedInput;
 	int lastDir;
 	bool attack;
+	bool sAttack;
 
 	std::vector<InputS> inputsQueue;
 
@@ -39,6 +40,7 @@ public:
 	void update(std::vector<std::vector<float>> *);
 	void harm(int);
 	void restart();
+	void rAttacking();
 	float getX();
 	float getY();
 	std::string getStats();

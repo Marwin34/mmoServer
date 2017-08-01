@@ -12,6 +12,7 @@ Client::Client(){
 	mouseButton = 0;
 	attackCd = 0;
 	attack = false;
+	sAttack = false;
 	self = new sf::TcpSocket;
 	maxHp = 500;
 	currHp = maxHp;
@@ -74,7 +75,6 @@ void Client::resetSpd(float x2, float y2, float width2, float height2, int direc
 
 void Client::update(std::vector<std::vector<float>> *obstacles){
 	if (currHp <= 0) restart();
-	attack = false;
 	dir = 4;
 	for (unsigned i = 0; i < inputsQueue.size(); i++){
 		spdX = 0;
@@ -83,6 +83,7 @@ void Client::update(std::vector<std::vector<float>> *obstacles){
 		if (inputsQueue[i].keyboard == 1) spdX = 2;
 		if (inputsQueue[i].keyboard == 2) spdY = 2;
 		if (inputsQueue[i].keyboard == 3) spdX = -2;
+		if (!mouseButton) mouseButton = inputsQueue[i].mouse;
 		for (unsigned j = 0; j < obstacles->size(); j++){
 			resetSpd(obstacles->at(j)[0] * 32, obstacles->at(j)[1] * 32, obstacles->at(j)[2] * 32, obstacles->at(j)[3] * 32, inputsQueue[i].keyboard); // 32 = block size;
 		}
@@ -100,8 +101,9 @@ void Client::update(std::vector<std::vector<float>> *obstacles){
 	}
 	if (attackCd){
 		attackCd++;
-		if (attackCd > 40) attackCd = 0;
+		if (attackCd > 10) attackCd = 0;
 	}
+	sAttack = attack;
 }
 
 void Client::harm(int damage){
@@ -114,6 +116,10 @@ void Client::restart(){
 	y = 0;
 	attack = false;
 	attackCd = 0;
+}
+
+void Client::rAttacking(){
+	attack = false;
 }
 
 std::string Client::getStats(){
@@ -148,12 +154,12 @@ bool Client::attacking(){
 
 sf::Packet& operator <<(sf::Packet& packet, const Client& client)
 {
-	return packet << client.id << client.x << client.y << client.dir << client.attack << client.maxHp << client.currHp;
+	return packet << client.id << client.x << client.y << client.dir << client.sAttack << client.maxHp << client.currHp;
 }
 
 sf::Packet& operator <(sf::Packet& packet, const Client& client)
 {
-	return packet << client.dealedInput << client.x << client.y << client.attack << client.maxHp << client.currHp;
+	return packet << client.dealedInput << client.x << client.y << client.sAttack << client.maxHp << client.currHp;
 }
 
 sf::Packet& operator >>(sf::Packet& packet, Client& client)
@@ -162,7 +168,7 @@ sf::Packet& operator >>(sf::Packet& packet, Client& client)
 	InputS tmp;
 	packet >> tmp.index;
 	packet >> tmp.keyboard;
-	packet >> tmp.mosue;
+	packet >> tmp.mouse;
 	client.inputsQueue.push_back(tmp);
 	return packet;
 }
