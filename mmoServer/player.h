@@ -8,7 +8,7 @@ struct InputS{
 	int mouse;
 };
 
-class Client {
+class Player {
 	sf::TcpSocket* self;
 	float x, y;
 	float spdX, spdY;
@@ -27,13 +27,13 @@ class Client {
 
 	std::vector<InputS> inputsQueue;
 
-	friend sf::Packet& operator <<(sf::Packet&, const Client&); // Send operator.
-	friend sf::Packet& operator <(sf::Packet&, const Client&); // Send operator.
-	friend sf::Packet& operator >>(sf::Packet&, Client&); // Receive operator.
+	friend sf::Packet& operator <<(sf::Packet&, const Player&); // Send operator.
+	friend sf::Packet& operator <(sf::Packet&, const Player&); // Send operator.
+	friend sf::Packet& operator >>(sf::Packet&, Player&); // Receive operator.
 
 public:
-	Client();
-	~Client();
+	Player();
+	~Player();
 	void init(sf::TcpSocket*);
 	void initId(int);
 	void resetSpd(float, float, float, float, int); // Take player position and size and match with colideable object position and size (considering speed ofc.) if they are colideing, set speed to 0. Used in above function.

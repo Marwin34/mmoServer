@@ -2,7 +2,7 @@
 #include <SFML/Network.hpp>
 
 #include "level.h"
-#include "client.h"
+#include "player.h"
 #include "enemy.h"
 
 class Server {
@@ -23,7 +23,7 @@ class Server {
 
 	struct Map {
 		Level level;
-		std::vector<Client*> clients; // Make a list of clients, for each map.
+		std::vector<Player*> players; // Make a list of clients, for each map.
 		std::vector<Enemy> enemies;
 		std::vector<DamageArea> damageAreas; // Harmful areas ont he map. Spells, sword attacks itp.
 	};

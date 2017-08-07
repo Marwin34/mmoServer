@@ -29,8 +29,8 @@ void Server::run(){
 				}
 			}
 			for (unsigned i = 0; i < maps.size(); i++){
-				for (unsigned j = 0; j < maps[i].clients.size(); j++){
-					maps[i].clients[j]->update(&maps[i].level.getObstacles());
+				for (unsigned j = 0; j < maps[i].players.size(); j++){
+					maps[i].players[j]->update(&maps[i].level.getObstacles());
 				}
 			}
 			damageDealer();
@@ -54,46 +54,46 @@ void Server::receive(){
 			{
 				// The listener is ready: there is a pending connection
 				//sf::TcpSocket* client = new sf::TcpSocket;
-				Client* client = new Client;
-				if (listener.accept(*client->getSocket()) == sf::Socket::Done)
+				Player* player = new Player;
+				if (listener.accept(*player->getSocket()) == sf::Socket::Done)
 				{
-					client->initId(rand()); // Set randomly generated ID for client.
+					player->initId(rand()); // Set randomly generated ID for client.
 					// Add the new client to the clients list
-					maps[0].clients.push_back(client);
+					maps[0].players.push_back(player);
 					// Add the new client to the selector so that we will
 					// be notified when he sends something 
-					selector.add(*client->getSocket());
+					selector.add(*player->getSocket());
 
-					std::cout << "Polaczono z : " << client->getSocket()->getRemoteAddress() << " : " << client->getSocket()->getRemotePort() << " / " << client->getSocket()->getLocalPort() << " " << client->getId() << std::endl;
+					std::cout << "Polaczono z : " << player->getSocket()->getRemoteAddress() << " : " << player->getSocket()->getRemotePort() << " / " << player->getSocket()->getLocalPort() << " " << player->getId() << std::endl;
 				}
 				else
 				{
 					// Error, we won't get a new connection, delete the socket
-					delete client;
+					delete player;
 				}
 			}
 			else
 			{
 				// The listener socket is not ready, test all other sockets (the clients)
 				for (unsigned i = 0; i < maps.size(); i++){
-					for (unsigned int j = 0; j < maps[i].clients.size(); j++){
-						Client& client = *maps[i].clients[j];
-						if (selector.isReady(*client.getSocket()))
+					for (unsigned int j = 0; j < maps[i].players.size(); j++){
+						Player& player = *maps[i].players[j];
+						if (selector.isReady(*player.getSocket()))
 						{
 							// The client has sent some data, we can receive it
 							sf::Packet packet;
-							sf::Socket::Status status = client.getSocket()->receive(packet);
+							sf::Socket::Status status = player.getSocket()->receive(packet);
 							if (status == sf::Socket::Done)
 							{
-								packet >> client;
+								packet >> player;
 							}
 							else if (status == sf::Socket::Disconnected) // If client want to disconnect, remove him from selector and list of clients
 							{
 								//std::cout << client.getSocket()->getRemoteAddress() << " , " << client.getSocket()->getRemotePort() << " disconnected!" << std::endl;
-								selector.remove(*client.getSocket());
-								client.getSocket()->disconnect();
-								delete &client;
-								maps[i].clients.erase(maps[i].clients.begin() + j);
+								selector.remove(*player.getSocket());
+								player.getSocket()->disconnect();
+								delete &player;
+								maps[i].players.erase(maps[i].players.begin() + j);
 							}
 						}
 					}
@@ -108,19 +108,19 @@ void Server::send(){
 
 		std::string type = "DATAS"; // Data packet header.
 		sf::Packet packet;
-		for (unsigned j = 0; j < maps[i].clients.size(); j++){ 
+		for (unsigned j = 0; j < maps[i].players.size(); j++){
 			packet.clear();
-			packet << type << maps[i].clients.size() - 1 << maps[i].enemies.size(); // Insert count of enemies and players (excluded player which is contolled by this client).
-			Client& client = *maps[i].clients[j];
-			packet < client; // Insert data abaut player controlled by this client.
-			for (unsigned k = 0; k < maps[i].clients.size(); k++){ // Gather data about players.
-				if (maps[i].clients[k]->getId() == client.getId()) continue;
-				packet << *maps[i].clients[k];
+			packet << type << maps[i].players.size() - 1 << maps[i].enemies.size(); // Insert count of enemies and players (excluded player which is contolled by this client).
+			Player& player = *maps[i].players[j];
+			packet < player; // Insert data abaut player controlled by this client.
+			for (unsigned k = 0; k < maps[i].players.size(); k++){ // Gather data about players.
+				if (maps[i].players[k]->getId() == player.getId()) continue;
+				packet << *maps[i].players[k];
 			}
 			for (unsigned k = 0; k < maps[i].enemies.size(); k++){ // Gather data abaut enemies.
 				packet << maps[i].enemies[k];
 			}
-			if (maps[i].clients[j]->getSocket()->send(packet) != sf::Socket::Done) continue; // Send data to players on this map.
+			if (maps[i].players[j]->getSocket()->send(packet) != sf::Socket::Done) continue; // Send data to players on this map.
 		}
 	}
 }
@@ -129,7 +129,7 @@ void Server::mapsInitialization(){
 	Map tmp;
 	maps.resize(0);
 	if (tmp.level.load("starting.txt")){
-		tmp.clients.resize(0);
+		tmp.players.resize(0);
 		tmp.damageAreas.resize(0);
 		tmp.enemies = enemiesInit("starting");
 		maps.push_back(tmp);
@@ -138,50 +138,50 @@ void Server::mapsInitialization(){
 
 void Server::damageDealer(){ // Obsolete, not used currently!!!!
 	for (unsigned i = 0; i < maps.size(); i++){
-		for (unsigned j = 0; j < maps[i].clients.size(); j++){
-			if (maps[i].clients[j]->attacking()){
+		for (unsigned j = 0; j < maps[i].players.size(); j++){
+			if (maps[i].players[j]->attacking()){
 				DamageArea tmp;
-
-				if (maps[i].clients[j]->getDir() == 0){
-					tmp.x = maps[i].clients[j]->getX();
-					tmp.y = maps[i].clients[j]->getY() - 10;
+				std::cout << maps[i].players[j]->getDir() << std::endl;
+				if (maps[i].players[j]->getDir() == 0){
+					tmp.x = maps[i].players[j]->getX();
+					tmp.y = maps[i].players[j]->getY() - 10;
 					tmp.width = 32;
 					tmp.height = 10;
 				}
-				if (maps[i].clients[j]->getDir() == 1){
-					tmp.x = maps[i].clients[j]->getX() + 32;
-					tmp.y = maps[i].clients[j]->getY();
+				if (maps[i].players[j]->getDir() == 1){
+					tmp.x = maps[i].players[j]->getX() + 32;
+					tmp.y = maps[i].players[j]->getY();
 					tmp.width = 10;
 					tmp.height = 32;
 				}
-				if (maps[i].clients[j]->getDir() == 2 || maps[i].clients[j]->getDir() == 4){
-					tmp.x = maps[i].clients[j]->getX();
-					tmp.y = maps[i].clients[j]->getY() + 32;
+				if (maps[i].players[j]->getDir() == 2 || maps[i].players[j]->getDir() == 4){
+					tmp.x = maps[i].players[j]->getX();
+					tmp.y = maps[i].players[j]->getY() + 32;
 					tmp.width = 32;
 					tmp.height = 10;
 				}
-				if (maps[i].clients[j]->getDir() == 3){
-					tmp.x = maps[i].clients[j]->getX() - 10;
-					tmp.y = maps[i].clients[j]->getY();
+				if (maps[i].players[j]->getDir() == 3){
+					tmp.x = maps[i].players[j]->getX() - 10;
+					tmp.y = maps[i].players[j]->getY();
 					tmp.width = 10;
 					tmp.height = 32;
 				}
 				//std::cout << tmp.x << " , " << tmp.y << std::endl;
 				tmp.damage = 44;
 				tmp.ttl = 1;
-				tmp.originId = maps[i].clients[j]->getId();
+				tmp.originId = maps[i].players[j]->getId();
 				maps[i].damageAreas.push_back(tmp);
-				maps[i].clients[j]->rAttacking();
+				maps[i].players[j]->rAttacking();
 			}
 		}
 		for (unsigned j = 0; j < maps[i].damageAreas.size(); j++){
-			for (unsigned k = 0; k < maps[i].clients.size(); k++){
-				if (maps[i].damageAreas[j].x <= maps[i].clients[k]->getX() + 32
-					&& maps[i].clients[k]->getX() <= maps[i].damageAreas[j].x + maps[i].damageAreas[j].width
-					&& maps[i].damageAreas[j].y <= maps[i].clients[k]->getY() + 32
-					&& maps[i].clients[k]->getY() <= maps[i].damageAreas[j].y + maps[i].damageAreas[j].height
-					&& maps[i].clients[k]->getId() != maps[i].damageAreas[j].originId){
-					maps[i].clients[k]->harm(maps[i].damageAreas[j].damage);
+			for (unsigned k = 0; k < maps[i].players.size(); k++){
+				if (maps[i].damageAreas[j].x <= maps[i].players[k]->getX() + 32
+					&& maps[i].players[k]->getX() <= maps[i].damageAreas[j].x + maps[i].damageAreas[j].width
+					&& maps[i].damageAreas[j].y <= maps[i].players[k]->getY() + 32
+					&& maps[i].players[k]->getY() <= maps[i].damageAreas[j].y + maps[i].damageAreas[j].height
+					&& maps[i].players[k]->getId() != maps[i].damageAreas[j].originId){
+					maps[i].players[k]->harm(maps[i].damageAreas[j].damage);
 				}
 			}
 			for (unsigned k = 0; k < maps[i].enemies.size(); k++){

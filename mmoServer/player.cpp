@@ -1,6 +1,6 @@
-#include "client.h"
+#include "player.h"
 
-Client::Client(){
+Player::Player(){
 	mapId = 0; // 0 == Starting zone.
 	id = 0;
 	x = 0;
@@ -22,20 +22,20 @@ Client::Client(){
 	inputsQueue.resize(0);
 }
 
-Client::~Client(){
+Player::~Player(){
 
 }
 
-void Client::init(sf::TcpSocket *data){
+void Player::init(sf::TcpSocket *data){
 	self = data;
 }
 
-void Client::initId(int data){
+void Player::initId(int data){
 	id = data;
 	//std::cout << charId << std::endl;
 }
 
-void Client::resetSpd(float x2, float y2, float width2, float height2, int direcrtion){ 
+void Player::resetSpd(float x2, float y2, float width2, float height2, int direcrtion){
 	if (direcrtion == 0  // TOP
 		&& x <= x2 + width2
 		&& x2 <= x + 32
@@ -73,10 +73,11 @@ void Client::resetSpd(float x2, float y2, float width2, float height2, int direc
 	}
 }
 
-void Client::update(std::vector<std::vector<float>> *obstacles){
+void Player::update(std::vector<std::vector<float>> *obstacles){
 	if (currHp <= 0) restart();
 	dir = 4;
 	for (unsigned i = 0; i < inputsQueue.size(); i++){
+		//std::cout << attackCd << " , " << inputsQueue[i].mouse << std::endl;
 		spdX = 0;
 		spdY = 0;
 		if (inputsQueue[i].keyboard == 0) spdY = -2;
@@ -92,10 +93,9 @@ void Client::update(std::vector<std::vector<float>> *obstacles){
 		y += spdY;
 		dealedInput = inputsQueue[i].index;
 	}
-	lastDir = dir;
+	if (dir != 4)lastDir = dir;
 	inputsQueue.resize(0);
 	if (mouseButton == 1 && !attackCd){
-		mouseButton = 0;
 		attackCd = 1;
 		attack = true;
 	}
@@ -103,14 +103,15 @@ void Client::update(std::vector<std::vector<float>> *obstacles){
 		attackCd++;
 		if (attackCd > 10) attackCd = 0;
 	}
+	mouseButton = 0;
 	sAttack = attack;
 }
 
-void Client::harm(int damage){
+void Player::harm(int damage){
 	currHp -= damage;
 }
 
-void Client::restart(){
+void Player::restart(){
 	currHp = maxHp;
 	x = 0;
 	y = 0;
@@ -118,51 +119,51 @@ void Client::restart(){
 	attackCd = 0;
 }
 
-void Client::rAttacking(){
+void Player::rAttacking(){
 	attack = false;
 }
 
-std::string Client::getStats(){
+std::string Player::getStats(){
 	std::stringstream ss;
 	ss << dir;
 	return ss.str();
 }
 
-sf::TcpSocket* Client::getSocket(){
+sf::TcpSocket* Player::getSocket(){
 	return self;
 }
 
-float Client::getX(){
+float Player::getX(){
 	return x;
 }
 
-float Client::getY(){
+float Player::getY(){
 	return y;
 }
 
-int Client::getId(){
+int Player::getId(){
 	return id;
 }
 
-int Client::getDir(){
+int Player::getDir(){
 	return lastDir;
 }
 
-bool Client::attacking(){
+bool Player::attacking(){
 	return attack;
 }
 
-sf::Packet& operator <<(sf::Packet& packet, const Client& client)
+sf::Packet& operator <<(sf::Packet& packet, const Player& player)
 {
-	return packet << client.id << client.x << client.y << client.dir << client.sAttack << client.maxHp << client.currHp;
+	return packet << player.id << player.x << player.y << player.dir << player.sAttack << player.maxHp << player.currHp;
 }
 
-sf::Packet& operator <(sf::Packet& packet, const Client& client)
+sf::Packet& operator <(sf::Packet& packet, const Player& player)
 {
-	return packet << client.dealedInput << client.x << client.y << client.sAttack << client.maxHp << client.currHp;
+	return packet << player.dealedInput << player.x << player.y << player.sAttack << player.maxHp << player.currHp;
 }
 
-sf::Packet& operator >>(sf::Packet& packet, Client& client)
+sf::Packet& operator >>(sf::Packet& packet, Player& client)
 {
 	//return packet >> client.inputIndex >> client.dir >> client.mouseButton;
 	InputS tmp;
