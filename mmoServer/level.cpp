@@ -42,7 +42,7 @@ bool Level::load(std::string path){
 				std::vector<float> tmpObstacle; // Create temporary obstacle
 				while (1){
 					file >> tmp;
-					if (tmp.find("location") != std::string::npos && tmp.find("location") == 0){ // Fin its location and read it to memory.
+					if (tmp.find("location") != std::string::npos && tmp.find("location") == 0){ // Find its location and read it to memory.
 						tmp = tmp.substr(tmp.find("=") + 1, tmp.length() - tmp.find("=") - 1);
 						stream.clear();
 						stream.str(tmp);

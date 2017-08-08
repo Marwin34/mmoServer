@@ -25,6 +25,7 @@ class Server {
 		Level level;
 		std::vector<Player*> players; // Make a list of clients, for each map.
 		std::vector<Enemy> enemies;
+		std::vector<Enemy> respawnQueue; // Queue of enemies waiting for respawn.
 		std::vector<DamageArea> damageAreas; // Harmful areas ont he map. Spells, sword attacks itp.
 	};
 
@@ -38,5 +39,6 @@ public:
 	void receive();
 	void send();
 	void mapsInitialization();
+	void manageRespawns();
 	void damageDealer();
 };

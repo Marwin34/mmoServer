@@ -22,18 +22,23 @@ void Server::run(){
 
 		if (mainTimer.asMilliseconds() - lastUpdate.asMilliseconds() >= 100){ // Update scene and send data only every 50 milliseconds;
 			//std::cout << serverTick << std::endl;
-			
+			for (unsigned i = 0; i < maps.size(); i++){
+				for (unsigned j = 0; j < maps[i].respawnQueue.size(); j++){
+					maps[i].respawnQueue[j].update();
+				}
+			}
+			damageDealer();
 			for (unsigned i = 0; i < maps.size(); i++){
 				for (unsigned j = 0; j < maps[i].enemies.size(); j++){
 					maps[i].enemies[j].update();
 				}
 			}
+			manageRespawns();
 			for (unsigned i = 0; i < maps.size(); i++){
 				for (unsigned j = 0; j < maps[i].players.size(); j++){
 					maps[i].players[j]->update(&maps[i].level.getObstacles());
 				}
 			}
-			damageDealer();
 			lastUpdate = mainTimer;
 			serverTick++;
 			std::cout << "Updates Per Second : " << 1.f / fpsClock.getElapsedTime().asSeconds() << std::endl;
@@ -136,12 +141,30 @@ void Server::mapsInitialization(){
 	}
 }
 
+void Server::manageRespawns(){
+	for (unsigned i = 0; i < maps.size(); i++){
+		for (unsigned k = 0; k < maps[i].enemies.size(); k++){
+			if (!maps[i].enemies[k].isAlive()){
+				maps[i].respawnQueue.push_back(maps[i].enemies[k]);
+				maps[i].enemies.erase(maps[i].enemies.begin() + k);
+			}
+		}
+	}
+	for (unsigned i = 0; i < maps.size(); i++){
+		for (unsigned k = 0; k < maps[i].respawnQueue.size(); k++){
+			if (maps[i].respawnQueue[k].isAlive()){
+				maps[i].enemies.push_back(maps[i].respawnQueue[k]);
+				maps[i].respawnQueue.erase(maps[i].respawnQueue.begin() + k);
+			}
+		}
+	}
+}
+
 void Server::damageDealer(){ // Obsolete, not used currently!!!!
 	for (unsigned i = 0; i < maps.size(); i++){
 		for (unsigned j = 0; j < maps[i].players.size(); j++){
 			if (maps[i].players[j]->attacking()){
 				DamageArea tmp;
-				std::cout << maps[i].players[j]->getDir() << std::endl;
 				if (maps[i].players[j]->getDir() == 0){
 					tmp.x = maps[i].players[j]->getX();
 					tmp.y = maps[i].players[j]->getY() - 10;
