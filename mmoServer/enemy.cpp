@@ -41,6 +41,15 @@ void Enemy::update(){
 	if (!alive && respawnClock.getElapsedTime().asMilliseconds() >= respawnTime.asMilliseconds()) {
 		respawn();
 	}
+	if (alive){
+		dir = ((rand() + 1) % 200) / 50;
+		if (dir == 0) spdY = -2;
+		if (dir == 1) spdX = 2;
+		if (dir == 2) spdY = 2;
+		if (dir == 3) spdX = -2;
+	}
+	x += spdX;
+	y += spdY;
 }
 
 void Enemy::harm(int damage){
