@@ -24,13 +24,13 @@ void Server::run(){
 			//std::cout << serverTick << std::endl;
 			for (unsigned i = 0; i < maps.size(); i++){
 				for (unsigned j = 0; j < maps[i].respawnQueue.size(); j++){
-					maps[i].respawnQueue[j].update();
+					maps[i].respawnQueue[j].update(&maps[i].level.getObstacles());
 				}
 			}
 			damageDealer();
 			for (unsigned i = 0; i < maps.size(); i++){
 				for (unsigned j = 0; j < maps[i].enemies.size(); j++){
-					maps[i].enemies[j].update();
+					maps[i].enemies[j].update(&maps[i].level.getObstacles());
 				}
 			}
 			manageRespawns();

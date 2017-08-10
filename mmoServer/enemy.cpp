@@ -10,6 +10,7 @@ Enemy::Enemy(){
 	damage = 0;
 	range = 0;
 	dir = 0;
+	dirCd = 0;
 	respawnTime = sf::Time::Zero;
 	attack = false;
 	alive = false;
@@ -33,7 +34,45 @@ void Enemy::init(std::string name, float startX, float startY){
 	}
 }
 
-void Enemy::update(){
+void Enemy::resetSpd(float x2, float y2, float width2, float height2, int direcrtion){
+	if (direcrtion == 0  // TOP
+		&& x <= x2 + width2
+		&& x2 <= x + 32
+		&& y - 2 <= y2 + height2
+		&& y2 <= y - 2 + 32){
+		dir = 4;
+		spdY = 0;
+	}
+
+	if (direcrtion == 1 // RIGHT
+		&& x + 2 <= x2 + width2
+		&& x2 <= x + 2 + 32
+		&& y <= y2 + height2
+		&& y2 <= y + 32) {
+		dir = 4;
+		spdX = 0;
+	}
+
+	if (direcrtion == 2 // DOWN
+		&& x <= x2 + width2
+		&& x2 <= x + 32
+		&& y + 2 <= y2 + height2
+		&& y2 <= y + 2 + 32){
+		dir = 4;
+		spdY = 0;
+	}
+
+	if (direcrtion == 3 // LEFT
+		&& x - 2 <= x2 + width2
+		&& x2 <= x - 2 + 32
+		&& y <= y2 + height2
+		&& y2 <= y + 32){
+		dir = 4;
+		spdX = 0;
+	}
+}
+
+void Enemy::update(std::vector<std::vector<float>> *obstacles){
 	if (alive && currHp <= 0) {
 		alive = false;
 		respawnClock.restart();
@@ -42,11 +81,23 @@ void Enemy::update(){
 		respawn();
 	}
 	if (alive){
-		dir = ((rand() + 1) % 200) / 50;
+		if (dirCd){
+			dirCd++;
+			if (dirCd > 10) dirCd = 0;
+		}
+		else {
+			dir = ((rand() + 1) % 200) / 50;
+			dirCd++;
+		}
+		spdY = 0;
+		spdX = 0;
 		if (dir == 0) spdY = -2;
 		if (dir == 1) spdX = 2;
 		if (dir == 2) spdY = 2;
 		if (dir == 3) spdX = -2;
+		for (unsigned j = 0; j < obstacles->size(); j++){
+			resetSpd(obstacles->at(j)[0] * 32, obstacles->at(j)[1] * 32, obstacles->at(j)[2] * 32, obstacles->at(j)[3] * 32, dir); // 32 = block size;
+		}
 	}
 	x += spdX;
 	y += spdY;
@@ -61,6 +112,8 @@ void Enemy::respawn(){
 	y = oY;
 	currHp = maxHp;
 	alive = true;
+	dirCd = 0;
+	dir = 4;
 }
 
 float Enemy::getRange(){

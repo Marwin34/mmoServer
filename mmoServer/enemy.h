@@ -12,6 +12,7 @@ class Enemy{
 	int damage;
 	int id;
 	int dir; 
+	int dirCd;
 	bool attack;
 	bool alive;
 	sf::Time respawnTime;
@@ -22,7 +23,8 @@ public:
 	Enemy();
 	~Enemy();
 	void init(std::string, float, float);
-	void update();
+	void resetSpd(float, float, float, float, int); // Take player position and size and match with colideable object position and size (considering speed ofc.) if they are colideing, set speed to 0. Used in above function.
+	void update(std::vector<std::vector<float>> *);
 	void harm(int);
 	void respawn();
 	float getRange();
